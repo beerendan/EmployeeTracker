@@ -83,28 +83,7 @@ function viewEmployees(){
     });
 };
 
-//Add an employee function
-function addEmployees(){
-    
-    var query=
-    `SELECT r.id, r.title, r.salary
-    FROM roles r`
-
-    db.query(query, function(err, results){
-        if(err) throw err;
-
-    const addRole=results.map(({id,title,salary})=>({
-        value: id, 
-        title:`${title}`,
-        salary:`${salary}`
-    }));
-    
-    console.table(results);
-    addData(addRole);
-});
-}
-
-//Gather the new employee info
+//Add a new employee function
 function addEmployee (){
     const query=`SELECT CONCAT(e.first_name, ' ', e.last_name) AS full_name, r.title
     FROM employee AS e
@@ -115,8 +94,8 @@ function addEmployee (){
     const roleList=results.map((row) => row.title);
     const names=results.map((row)=> row.full_name);
 
-console.log(roleList);
-console.log(names);
+    //console.log(roleList);
+    //console.log(names);
 
     inquirer.prompt([
         {
@@ -180,15 +159,14 @@ function updateEmployee(){
 };
 function displayEmployees(){
     var query=
-    `Select e.id, e.first_name, e.last_name, r.title, d.department_name, r.salary, CONCAT(m.first_name, ' ',last_name) AS manager
+    `Select e.id, e.first_name, e.last_name, r.title, d.department_name, r.salary
     FROM employee e
     JOIN roles r
     ON e.roles_id = r.id
     JOIN department d
     ON d.id = r.department_id
-    JOIN employee m
-    ON m.id = e.manager_id
     `
+
     db.query(query, function(err, results){
         if (err) throw err;
         const selectEmployee= results.map(({ id, first_name, last_name})=>({
@@ -200,6 +178,15 @@ function displayEmployees(){
     })
 };
 
+function roleOptions(selectEmployee){
+    var query= `SELECT title FROM roles`
+    let addRole;
+    db.query(query, function (err, results) {
+        if (err) throw err;
+    addRole=results.map((row) => row.title);
+        rolePrompt(selectEmployee,addRole);
+    })
+}
 
 function rolePrompt(selectEmployee, addRole){
     inquirer.prompt([
@@ -207,18 +194,20 @@ function rolePrompt(selectEmployee, addRole){
             type:"list",
             name:"employees",
             message:"Which employee's role do you want to update?",
-            choices:selectEmployee
+            choices: selectEmployee
         },
         {
             type:"list",
             name:"roles",
             message:"Which role do you want to assign to the selected employee?",
-            choices:addRole
+            choices: addRole
         },
     ])
     .then(function(answers){
-        var query= `UPDATE employee SET role_id = ? WHERE id = ?`
-        db.query(query, [answers.roles, answers.employees],
+        const roleId=answers.roles;
+        const roleIndex=addRole.indexOf(roleId)+1;
+        var query= `UPDATE employee SET roles_id = ? WHERE id = ?`
+        db.query(query, [roleIndex, answers.employees],
             function(err,results){
                 if(err) throw err;
                 console.table(results);
@@ -231,8 +220,9 @@ function rolePrompt(selectEmployee, addRole){
 //TO view all roles
 function viewRoles(){
     var query=
-    `SELECT r.id, r.title, r.salary
-    FROM roles r`
+    `SELECT r.id, r.title, r.salary, d.department_name
+    FROM roles AS r
+    JOIN department AS d ON r.department_id = d.id;`
     let addRole;
     db.query(query, function(err,results){
         if (err) throw err;
