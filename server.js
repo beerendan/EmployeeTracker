@@ -92,12 +92,12 @@ function addEmployee(){
     db.query(query, function(err, results){
         if(err) throw err;
 
-    const addRole=results.map(({id,title,salar})=>({
+    const addRole=results.map(({id,title,salary})=>({
         value: id, 
         title:`${title}`,
         salary:`${salary}`
     }));
-    console.table(results);
+    //console.table(results);
     addData(addRole);
 });
 }
@@ -119,7 +119,7 @@ function addData(addRole){
             type:"list",
             name:"roles",
             message:"What is the employee's role?",
-            choice: roleList
+            choice: addRole
         }
     ])
     .then((answers)=>{
@@ -143,9 +143,69 @@ function addData(addRole){
 //Function for updating an existing employee
 function updateEmployee(){
     displayEmployees();
-}
+};
 function displayEmployees(){
     var query=
-    `Select e.id
+    `Select e.id, e.first_name, e.last_name, r.title, d.department_name, r.salary, CONCAT(m.first_name, ' ',last_name) AS manager
+    FROM employee e
+    JOIN role r
+    ON e.role_id = r.id
+    JOIN department d
+    ON d.id = r.department_id
+    JOIN employee m
+    ON m.id = e.manager_id
     `
+    db.query(query, function(err, results){
+        if (err) throw err;
+        const selectEmployee= results.map(({ id, first_name, last_name})=>({
+            value: id,
+            name:`${first_name} ${last_name}`
+        }));
+        console.table(results);
+        roleOptions(selectEmployee);
+    })
+};
+
+function roleOptions(selectEmployee){
+    var query=
+    `SELECT r.id, r.title, r.salary
+    FROM role r`
+    let addRole;
+    db.query(query, function(err,results){
+        if (err) throw err;
+            addRole= results.map(({ id, title, salary})=>({
+                value: id,
+                title: `${title}`,
+                salary: `${salary}`
+            }));
+            console.table(results)
+            rolePrompt(selectEmployee, addRole);
+    })
 }
+
+function rolePrompt(selectEmployee, addRole){
+    inquirer.prompt([
+        {
+            type:"list",
+            name:"employees",
+            message:"Which employee's role do you want to update?",
+            choices:selectEmployee
+        },
+        {
+            type:"list",
+            name:"roles",
+            message:"Which role do you want to assign to the selected employee?",
+            choices:addRole
+        },
+    ])
+    .then(function(answers){
+        var query= `UPDATE employee SET role_id = ? WHERE id = ?`
+        db.query(query, [answers.roles, answers.employees],
+            function(err,results){
+                if(err) throw err;
+                console.table(results);
+
+                start();
+            })
+    });
+};
