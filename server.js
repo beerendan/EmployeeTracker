@@ -82,3 +82,70 @@ function viewEmployees(){
         start();
     });
 };
+
+//Add an employee function
+function addEmployee(){
+    var query=
+    `SELECT r.id, r.title, r.salary
+    FROM role r`
+
+    db.query(query, function(err, results){
+        if(err) throw err;
+
+    const addRole=results.map(({id,title,salar})=>({
+        value: id, 
+        title:`${title}`,
+        salary:`${salary}`
+    }));
+    console.table(results);
+    addData(addRole);
+});
+}
+
+//Gather the new employee info
+function addData(addRole){
+    inquirer.prompt([
+        {
+            type:"input",
+            name:"first_name",
+            message:"What is the employee's first name?"
+        },
+        {
+            type:"input",
+            name:"last_name",
+            message:"What is the employee's last name?"
+        },
+        {
+            type:"list",
+            name:"roles",
+            message:"What is the employee's role?",
+            choice: roleList
+        }
+    ])
+    .then((answers)=>{
+        var query=` INSERT INTO employee SET ?`
+        db.query(query,
+            {
+                first_name:answers.first_name,
+                last_name:answers.last_name,
+                role_id:answers.roles,
+                manager_id: answers.managers,
+            },
+            function(err,results){
+                if (err) throw err;
+                console.table(results);
+                start();
+            }
+            );
+    });
+};
+
+//Function for updating an existing employee
+function updateEmployee(){
+    displayEmployees();
+}
+function displayEmployees(){
+    var query=
+    `Select e.id
+    `
+}
