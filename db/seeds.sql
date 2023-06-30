@@ -1,22 +1,22 @@
 USE employees_db;
 
-INSERT INTO department (department_name)
-VALUES ("Engineering"),
-        ("Finance"),
-        ("Legal"),
-        ("Sales");
+INSERT INTO department (id, department_name)
+VALUES (001, "Engineering"),
+        (002, "Finance"),
+        (003, "Legal"),
+        (004, "Sales");
 
-INSERT INTO role (title, salary, department_id)
-VALUES  ("Sales Lead", 100000, 4),
-        ("Salesperson", 80000, 4),
-        ("Lead Engineer", 150000, 1),
-        ("Software Engineer", 120000, 1),
-        ("Account Manager", 160000, 2),
-        ("Accountant", 125000, 2),
-        ("Legal Team Lead", 250000, 3),
-        ("Lawyer", 190000, 3);
+INSERT INTO roles (id, title, salary, department_id)
+VALUES  (001, "Sales Lead", 100000, 4),
+        (002, "Salesperson", 80000, 4),
+        (003, "Lead Engineer", 150000, 1),
+        (004, "Software Engineer", 120000, 1),
+        (005, "Account Manager", 160000, 2),
+        (006, "Accountant", 125000, 2),
+        (007, "Legal Team Lead", 250000, 3),
+        (008, "Lawyer", 190000, 3);
 
-INSERT INTO employee (id, first_name, last_name, role_id, manager_id)
+INSERT INTO employee (id, first_name, last_name, roles_id, manager_id)
 VALUES  (001, "John", "Doe", 1, null),
         (002, "Mike", "Chan", 2, 1),
         (003, "Ashley", "Rodriguez", 3, null),

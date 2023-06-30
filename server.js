@@ -69,8 +69,8 @@ function viewEmployees(){
     var query= 
         `SELECT e.id, e.first_name, e.last_name, r.title, d.department_name AS department, r.salary, CONCAT(m.first_name,' ',m.last_name) AS manager
     FROM employee e
-    LEFT JOIN role r
-    ON e.role_id = r.id
+    LEFT JOIN roles r
+    ON e.roles_id = r.id
     LEFT JOIN department d
     ON d.id = r.department_id
     LEFT JOIN employee m
@@ -84,10 +84,11 @@ function viewEmployees(){
 };
 
 //Add an employee function
-function addEmployee(){
+function addEmployees(){
+    
     var query=
     `SELECT r.id, r.title, r.salary
-    FROM role r`
+    FROM roles r`
 
     db.query(query, function(err, results){
         if(err) throw err;
@@ -97,39 +98,71 @@ function addEmployee(){
         title:`${title}`,
         salary:`${salary}`
     }));
-    //console.table(results);
+    
+    console.table(results);
     addData(addRole);
 });
 }
 
 //Gather the new employee info
-function addData(addRole){
+function addEmployee (){
+    const query=`SELECT CONCAT(e.first_name, ' ', e.last_name) AS full_name, r.title
+    FROM employee AS e
+    JOIN roles AS r ON r.id = e.roles_id;`
+    db.query(query,function(err, results){
+        if(err) throw err;
+        
+    const roleList=results.map((row) => row.title);
+    const names=results.map((row)=> row.full_name);
+
+console.log(roleList);
+console.log(names);
+
     inquirer.prompt([
         {
             type:"input",
-            name:"first_name",
+            name:"firstName",
             message:"What is the employee's first name?"
         },
         {
             type:"input",
-            name:"last_name",
+            name:"lastName",
             message:"What is the employee's last name?"
         },
         {
             type:"list",
             name:"roles",
             message:"What is the employee's role?",
-            choice: addRole
+            choices: roleList
+        },
+        {
+            type:"confirm",
+            name:"supervisor",
+            message:"Does the employee have a manager?"
+        },
+        {
+            type:"list",
+            name:"manager",
+            message:"Who is the employee's manager?",
+            choices: names,
+            when:(answers) => answers.supervisor
         }
     ])
     .then((answers)=>{
+       
+        const roleId=answers.roles;
+        const roleIndex=roleList.indexOf(roleId)+1;
+        
+        const nameId=answers.manager;
+        const manager=names.indexOf(nameId)+1;
+
         var query=` INSERT INTO employee SET ?`
         db.query(query,
             {
-                first_name:answers.first_name,
-                last_name:answers.last_name,
-                role_id:answers.roles,
-                manager_id: answers.managers,
+                first_name: answers.firstName,
+                last_name: answers.lastName,
+                roles_id: roleIndex,
+                manager_id: manager,
             },
             function(err,results){
                 if (err) throw err;
@@ -138,6 +171,7 @@ function addData(addRole){
             }
             );
     });
+})
 };
 
 //Function for updating an existing employee
@@ -148,8 +182,8 @@ function displayEmployees(){
     var query=
     `Select e.id, e.first_name, e.last_name, r.title, d.department_name, r.salary, CONCAT(m.first_name, ' ',last_name) AS manager
     FROM employee e
-    JOIN role r
-    ON e.role_id = r.id
+    JOIN roles r
+    ON e.roles_id = r.id
     JOIN department d
     ON d.id = r.department_id
     JOIN employee m
@@ -166,22 +200,6 @@ function displayEmployees(){
     })
 };
 
-function roleOptions(selectEmployee){
-    var query=
-    `SELECT r.id, r.title, r.salary
-    FROM role r`
-    let addRole;
-    db.query(query, function(err,results){
-        if (err) throw err;
-            addRole= results.map(({ id, title, salary})=>({
-                value: id,
-                title: `${title}`,
-                salary: `${salary}`
-            }));
-            console.table(results)
-            rolePrompt(selectEmployee, addRole);
-    })
-}
 
 function rolePrompt(selectEmployee, addRole){
     inquirer.prompt([
@@ -209,3 +227,21 @@ function rolePrompt(selectEmployee, addRole){
             })
     });
 };
+
+//TO view all roles
+function viewRoles(){
+    var query=
+    `SELECT r.id, r.title, r.salary
+    FROM roles r`
+    let addRole;
+    db.query(query, function(err,results){
+        if (err) throw err;
+            addRole= results.map(({ id, title, salary})=>({
+                value: id,
+                title: `${title}`,
+                salary: `${salary}`
+            }));
+            console.table(results)
+            start();
+    })
+}
