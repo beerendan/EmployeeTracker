@@ -282,3 +282,14 @@ function newRole(){
         });
     });
 };
+
+//View all departments
+function viewDepartments(){
+    var query=
+    `SELECT department_name FROM department`;
+    db.query(query, function(err,results){
+        if (err) throw err;
+        console.table(results);
+        start();
+    });
+};
