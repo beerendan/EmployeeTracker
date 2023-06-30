@@ -46,7 +46,7 @@ function start(){
                 break;
 
             case "Add Role":
-                addRole();
+                newRole();
                 break;
 
             case "View All Departments":
@@ -235,3 +235,50 @@ function viewRoles(){
             start();
     })
 }
+
+//Add a new role
+function newRole(){
+    var query=
+    `SELECT department_name FROM department`
+    db.query(query,function(err, results){
+        if(err) throw err;
+        
+    const depts=results.map((row) => row.department_name);
+    
+    inquirer.prompt([
+        {
+            type:"input",
+            name:"roleName",
+            message:"What is the name of the new role?"
+        },
+        {
+            type:"input",
+            name:"salary",
+            message:"What is the salary of the new role?"
+        },
+        {
+            type:"list",
+            name:"department",
+            message:"What is the department of the new role?",
+            choices: depts
+        }
+    ])
+    .then((answers) => {
+        const departmentId=answers.department;
+        const departmentIndex=depts.indexOf(departmentId)+1;
+
+        var query=`INSERT INTO roles SET ?`
+        db.query(query,
+            {
+                title: answers.roleName,
+                salary: answers.salary,
+                department_id: departmentIndex,
+            },
+            function (err,results){
+                if (err) throw err;
+                console.table(results);
+                start();
+            })
+        });
+    });
+};
