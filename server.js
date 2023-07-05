@@ -25,7 +25,7 @@ function start(){
         type:"list",
         name:"options",
         message:"What would you like to do?",
-        choices:["View All Employees", "Add Employee","Update Employee Role","View All Roles","Add Role","View All Departments","Add Department","Quit"]
+        choices:["View All Employees", "Add Employee","Update Employee Role","View All Roles","Add Role","View All Departments","Add Department","Delete An Entry","Quit"]
     })
     .then(function({options}){
         switch(options){
@@ -55,6 +55,10 @@ function start(){
 
             case "Add Department":
                 addDepartment();
+                break;
+
+            case "Delete An Entry":
+                deleteX();
                 break;
 
             case "Quit":
@@ -249,7 +253,7 @@ function newRole(){
         {
             type:"input",
             name:"roleName",
-            message:"What is the name of the new role?"
+            message:"What is the title of the new role?"
         },
         {
             type:"input",
@@ -314,4 +318,58 @@ function addDepartment(){
             start();
         });
     });
+}
+
+//Delete a department, role or employee
+function deleteX(){
+    var query=
+    `SELECT e.id, e.first_name, e.last_name, r.title, d.department_name AS department
+    FROM employee e
+    LEFT JOIN roles r
+    ON e.roles_id = r.id
+    LEFT JOIN department d
+    ON d.id = r.department_id`
+
+    db.query(query, function(err, results){
+        if (err) throw err;
+        
+        const selectEmployee=results.map(({id, first_name, last_name})=>({
+            value: id, name: `${id} ${first_name} ${last_name}`
+        })); 
+        const selectRole=results.map((row) => row.title);
+        const selectDept=results.map((row) => row.department_name);
+
+
+   
+    inquirer.prompt([
+        {
+            type:"list",
+            name:"selectFunction",
+            message:"What entry type would you like to remove?",
+            choices:["Employee","Role","Department"]
+        },
+        {
+            type:"list",
+            name:"employees",
+            message:"Which employee would you like to remove?",
+            choices: selectEmployee,
+            when:(answers)=> answers.selectFunction === "Employee"
+        },
+        {
+            type:"list",
+            name:"roles",
+            message:"Which role would you like to delete?",
+            choices: selectRole,
+            when:(answers)=> answers.selectFunction === "Role"
+        },
+        {
+            type:"list",
+            name:"dept",
+            message:"Which department would you like to delete?",
+            choices: selectDept,
+            when:(answers)=> answers.selectFunction === "Department"
+        },
+    ])
+   
+})
 }
