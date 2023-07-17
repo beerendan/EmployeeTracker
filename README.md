@@ -18,7 +18,7 @@ To begin, clone the repository and install the necessary packages. Then, customi
 ## Usage
 First, execute the .sql files to initialize the database, the run npm start and navigate the inquirer prompts in the command line for the various CMS functions.
 
-Video walkthrough of live project: 
+Video walkthrough of live project: https://drive.google.com/file/d/1oZZvbJnHJsG8AiQ3TsJE9_6b6Yzf986n/view
 
 Link to deployed project: Clone the repository to try it for yourself!
 
